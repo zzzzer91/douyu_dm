@@ -5,9 +5,11 @@ import re
 import socket
 import struct
 import time
+from datetime import datetime
 from threading import Thread
 
 import requests
+import pymongo
 
 
 def get_room_info(uid):
@@ -36,6 +38,9 @@ def send_msg(msg):
 
 def get_dm(room_id):
     """接受服务器消息，并提取弹幕信息"""
+    ct = pymongo.MongoClient('192.168.47.1')
+    db = ct['douyu']
+    tb = db[room_id]
 
     pattern = re.compile(b'type@=chatmsg/.+?/nn@=(.+?)/txt@=(.+?)/.+?/level@=(.+?)/.+?/\x00')
     while True:
@@ -46,14 +51,22 @@ def get_dm(room_id):
             buffer += recv_data
             if buffer.endswith(b'\x00'):
                 break
+        now = datetime.now()
         for nn, txt, level in pattern.findall(buffer):
             try:
                 print("[lv.{:0<2}][{}]: {}".format(level.decode(), nn.decode(), txt.decode()))
+                item = {
+                    'time': now,
+                    'level': level.decode(),
+                    'nn': nn.decode(),
+                    'txt': txt.decode(),
+                }
+                tb.insert_one(item)
             except UnicodeDecodeError:
                 # 斗鱼有些表情会引发unicode编码错误
                 pass
 
-
+    ct.close()
 def keep_live():
     """每隔40s发送心跳包"""
 
