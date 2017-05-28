@@ -1,6 +1,12 @@
 #!/usr/bin/env python3
 # coding:utf-8
 
+'''
+抓取斗鱼弹幕
+by zzzzer
+2017-5-8
+'''
+
 import re
 import socket
 import struct
@@ -13,7 +19,7 @@ import pymongo
 
 
 def get_room_info(uid):
-    """根据主播的uid（url上的），获取纯数字的room_id和主播中文名"""
+    '''根据主播的uid（url上的），获取纯数字的room_id和主播中文名'''
 
     url = 'http://www.douyu.com/{}'.format(uid)
     r = requests.get(url)
@@ -25,7 +31,7 @@ def get_room_info(uid):
 
 
 def send_msg(msg):
-    """发给斗鱼服务器所有的包都得加上消息头，格式见斗鱼弹幕手册"""
+    '''发给斗鱼服务器所有的包都得加上消息头，格式见斗鱼弹幕手册'''
 
     content = msg.encode()
     # 消息长度，这里加8而不是加12。所以实际tcp数据部分长度会比斗鱼协议头长度大4
@@ -37,38 +43,39 @@ def send_msg(msg):
 
 
 def get_dm(room_id):
-    """接受服务器消息，并提取弹幕信息"""
-    ct = pymongo.MongoClient('192.168.47.1')
-    db = ct['douyu']
-    tb = db[room_id]
+    '''接受服务器消息，并提取弹幕信息'''
 
-    pattern = re.compile(b'type@=chatmsg/.+?/nn@=(.+?)/txt@=(.+?)/.+?/level@=(.+?)/.+?/\x00')
-    while True:
-        # 接收的包有可能被分割，需要把它们重新合并起来，不然信息可能会缺失
-        buffer = b''
+    with pymongo.MongoClient('192.168.47.1') as ct:
+        db = ct['douyu']
+        tb = db[room_id]
+
+        pattern = re.compile(b'type@=chatmsg/.+?/nn@=(.+?)/txt@=(.+?)/.+?/level@=(.+?)/.+?/\x00')
         while True:
-            recv_data = sk_client.recv(1024)
-            buffer += recv_data
-            if buffer.endswith(b'\x00'):
-                break
-        now = datetime.now()
-        for nn, txt, level in pattern.findall(buffer):
-            try:
-                print("[lv.{:0<2}][{}]: {}".format(level.decode(), nn.decode(), txt.decode()))
-                item = {
-                    'time': now,
-                    'level': level.decode(),
-                    'nn': nn.decode(),
-                    'txt': txt.decode(),
-                }
-                tb.insert_one(item)
-            except UnicodeDecodeError:
-                # 斗鱼有些表情会引发unicode编码错误
-                pass
+            # 接收的包有可能被分割，需要把它们重新合并起来，不然信息可能会缺失
+            buffer = b''
+            while True:
+                recv_data = sk_client.recv(1024)
+                buffer += recv_data
+                if recv_data.endswith(b'\x00'):
+                    break
+            now = datetime.now()
+            for nn, txt, level in pattern.findall(buffer):
+                try:
+                    print("[lv.{:0<2}][{}]: {}".format(level.decode(), nn.decode(), txt.decode()))
+                    item = {
+                        'time': now,
+                        'level': level.decode(),
+                        'nn': nn.decode(),
+                        'txt': txt.decode(),
+                    }
+                    tb.insert_one(item)
+                except UnicodeDecodeError:
+                    # 斗鱼有些表情会引发unicode编码错误
+                    pass
 
-    ct.close()
+
 def keep_live():
-    """每隔40s发送心跳包"""
+    '''每隔40s发送心跳包'''
 
     while True:
         time.sleep(40)
@@ -83,10 +90,10 @@ def main():
 
     global sk_client
     sk_client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    # 这个服务器是我测试正常的 2017.5.8
+    # 这个服务器是我测试正常的 2017.5.28
     # 有些服务器很奇怪，虽然能接收弹幕，但wireshark分析，会出现一大堆TCP Retransmission
     # 并且接收了一段时间后就会停止接收，即使发了心跳包
-    hosts = '117.187.26.60'
+    hosts = '223.99.254.250'
     port = 12601
     sk_client.connect((hosts, port))
 
@@ -107,5 +114,5 @@ def main():
     t2.start()
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
