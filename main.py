@@ -56,7 +56,7 @@ def get_dm(room_id):
                 break
         for nn, txt, level in pattern.findall(buffer):
             try:
-                print("[lv.{:0<2}][{}]: {}".format(level.decode(), nn.decode(), txt.decode()))
+                print("[lv.{:0<2}][{}]: {}".format(level.decode(), nn.decode(), txt.decode().strip()))
             except UnicodeDecodeError:
                 # 斗鱼有些表情会引发unicode编码错误
                 pass
