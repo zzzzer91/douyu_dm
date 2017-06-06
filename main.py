@@ -63,7 +63,7 @@ def get_dm(room_id):
             now = datetime.now()
             for nn, txt, level in pattern.findall(buffer):
                 try:
-                    print("[lv.{:0<2}][{}]: {}".format(level.decode(), nn.decode(), txt.decode()))
+                    print("[lv.{:0<2}][{}]: {}".format(level.decode(), nn.decode(), txt.decode().strip()))
                     item = {
                         'time': now,
                         'level': level.decode(),
