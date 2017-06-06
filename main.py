@@ -1,6 +1,14 @@
 #!/usr/bin/env python3
 # coding:utf-8
 
+'''
+title:      抓取斗鱼弹幕
+create:     2017-5-8
+modified:   2017-5-29
+'''
+
+__author__ = 'zzzzer'
+
 import re
 import socket
 import struct
@@ -11,7 +19,7 @@ import requests
 
 
 def get_room_info(uid):
-    """根据主播的uid（url上的），获取纯数字的room_id和主播中文名"""
+    '''根据主播的uid（房间url上的），获取纯数字的room_id和主播中文名'''
 
     url = 'http://www.douyu.com/{}'.format(uid)
     r = requests.get(url)
@@ -23,7 +31,7 @@ def get_room_info(uid):
 
 
 def send_msg(msg):
-    """发给斗鱼服务器所有的包都得加上消息头，格式见斗鱼弹幕手册"""
+    '''发给斗鱼服务器所有的包都得加上消息头，格式见斗鱼弹幕手册'''
 
     content = msg.encode()
     # 消息长度，这里加8而不是加12。所以实际tcp数据部分长度会比斗鱼协议头长度大4
@@ -35,7 +43,7 @@ def send_msg(msg):
 
 
 def get_dm(room_id):
-    """接受服务器消息，并提取弹幕信息"""
+    '''接受服务器消息，并提取弹幕信息'''
 
     pattern = re.compile(b'type@=chatmsg/.+?/nn@=(.+?)/txt@=(.+?)/.+?/level@=(.+?)/.+?/\x00')
     while True:
@@ -44,7 +52,7 @@ def get_dm(room_id):
         while True:
             recv_data = sk_client.recv(1024)
             buffer += recv_data
-            if buffer.endswith(b'\x00'):
+            if recv_data.endswith(b'\x00'):
                 break
         for nn, txt, level in pattern.findall(buffer):
             try:
@@ -55,7 +63,7 @@ def get_dm(room_id):
 
 
 def keep_live():
-    """每隔40s发送心跳包"""
+    '''每隔40s发送心跳包'''
 
     while True:
         time.sleep(40)
@@ -70,10 +78,10 @@ def main():
 
     global sk_client
     sk_client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    # 这个服务器是我测试正常的 2017.5.8
+    # 这个服务器是我测试正常的 2017.5.28
     # 有些服务器很奇怪，虽然能接收弹幕，但wireshark分析，会出现一大堆TCP Retransmission
     # 并且接收了一段时间后就会停止接收，即使发了心跳包
-    hosts = '117.187.26.60'
+    hosts = '223.99.254.250'
     port = 12601
     sk_client.connect((hosts, port))
 
@@ -88,11 +96,12 @@ def main():
 
     # 这里用多线程而不使用多进程的原因是，用wrieshark分析时发现，多进程会造成3次“三次握手”
     # 貌似是全局变量的原因
+    # 多线程对同一个socket，send和recv数据, 无需加锁
     t1 = Thread(target=get_dm, args=(room_id,))
     t2 = Thread(target=keep_live)
     t1.start()
     t2.start()
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
