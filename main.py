@@ -2,10 +2,12 @@
 # coding:utf-8
 
 '''
-抓取斗鱼弹幕
-by zzzzer
-2017-5-8
+title:      抓取斗鱼弹幕
+create:     2017-5-8
+modified:   2017-5-29
 '''
+
+__author__ = 'zzzzer'
 
 import re
 import socket
