@@ -4,7 +4,7 @@
 '''
 title:      抓取斗鱼弹幕
 create:     2017-5-8
-modified:   2017-5-29
+modified:   2017-6-6
 '''
 
 __author__ = 'zzzzer'
@@ -78,7 +78,7 @@ def main():
 
     global sk_client
     sk_client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    # 这个服务器是我测试正常的 2017.5.28
+    # 这个服务器是我测试正常的 2017.6.6
     # 有些服务器很奇怪，虽然能接收弹幕，但wireshark分析，会出现一大堆TCP Retransmission
     # 并且接收了一段时间后就会停止接收，即使发了心跳包
     hosts = '223.99.254.250'
