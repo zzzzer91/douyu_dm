@@ -15,12 +15,12 @@ import requests
 
 
 sk_client = socket.socket()
-# 这个服务器是我测试正常的 2017.7.13
+# 这个服务器是我测试正常的 2017.8.2
 # 有些服务器很奇怪，虽然能接收弹幕，但wireshark分析，会出现一大堆TCP Retransmission
 # 并且接收了一段时间后就会停止接收，即使发了心跳包
-hosts = '223.99.254.250'
+host = '223.99.254.250'
 port = 12601
-sk_client.connect((hosts, port))
+sk_client.connect((host, port))
 
 
 def get_room_info(uid):
@@ -70,26 +70,26 @@ def init(room_id):
     # gid=-9999代表接收海量弹幕, 发完下面这个包, 服务器才会向客户端发送弹幕
     msg_join = 'type@=joingroup/rid@={}/gid@=-9999/\x00'.format(room_id)
     send_msg(msg_join)
-
+    
 
 def get_dm():
     '''接受服务器消息, 并提取弹幕信息.'''
 
-    pattern = re.compile(b'type@=chatmsg/.+?/nn@=(.+?)/txt@=(.+?)/.+?/level@=(.+?)/.+?/\x00')
+    pattern = re.compile(b'type@=chatmsg/.+?/nn@=(.+?)/txt@=(.+?)/.+?/level@=(.+?)/')
     while True:
         # 接收的包有可能被分割, 需要把它们重新合并起来, 不然信息可能会缺失
         buffer = b''
         while True:
-            recv_data = sk_client.recv(1024)
+            recv_data = sk_client.recv(4096)
             buffer += recv_data
             if recv_data.endswith(b'\x00'):
                 break
         for nn, txt, level in pattern.findall(buffer):
             try:
                 print("[lv.{:0<2}][{}]: {}".format(level.decode(), nn.decode(), txt.decode().strip()))
-            except UnicodeDecodeError:
+            except UnicodeDecodeError as e:
                 # 斗鱼有些表情会引发unicode编码错误
-                pass
+                print(e)
 
 
 def keep_live():
