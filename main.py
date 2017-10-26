@@ -15,7 +15,7 @@ import requests
 
 
 sk_client = socket.socket()
-# 这个服务器是我测试正常的 2017.8.2
+# 这个服务器是我测试正常的 2017.10.26
 # 有些服务器很奇怪，虽然能接收弹幕，但wireshark分析，会出现一大堆TCP Retransmission
 # 并且接收了一段时间后就会停止接收，即使发了心跳包
 host = '223.99.254.250'
@@ -36,7 +36,7 @@ def get_room_info(uid):
     r = requests.get(url)
     pattern = re.compile(r'"room_id":(\d+)')
     room_id = pattern.findall(r.text)[0]
-    pattern = re.compile(r'<span class="nn fl">(.+?)</span>')
+    pattern = re.compile(r'<a class="zb-name">(.*?)</a>')
     name = pattern.findall(r.text)[0]
     return room_id, name
 
