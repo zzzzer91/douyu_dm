@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # coding:utf-8
 
-'''抓取斗鱼弹幕.'''
+r'''抓取斗鱼弹幕.'''
 
 __author__ = 'zzzzer'
 
@@ -24,7 +24,7 @@ sk_client.connect((host, port))
 
 
 def get_room_info(uid):
-    '''根据主播的uid(房间url上的), 获取纯数字的room_id和主播中文名.
+    r'''根据主播的uid(房间url上的), 获取纯数字的room_id和主播中文名.
     
     :param uid: str.
 
@@ -42,7 +42,7 @@ def get_room_info(uid):
 
 
 def send_msg(msg):
-    '''发给斗鱼服务器所有的包都得加上消息头, 格式见斗鱼弹幕手册.
+    r'''发给斗鱼服务器所有的包都得加上消息头, 格式见斗鱼弹幕手册.
     
     :param msg: str.
     '''
@@ -57,7 +57,7 @@ def send_msg(msg):
 
 
 def init(room_id):
-    '''向服务器发送相应数据包, 准备接收弹幕.
+    r'''向服务器发送相应数据包, 准备接收弹幕.
     
     :param room_id: str, 房间id.
     '''
@@ -73,7 +73,7 @@ def init(room_id):
     
 
 def get_dm():
-    '''接受服务器消息, 并提取弹幕信息.'''
+    r'''接受服务器消息, 并提取弹幕信息.'''
 
     pattern = re.compile(b'type@=chatmsg/.+?/nn@=(.+?)/txt@=(.+?)/.+?/level@=(.+?)/')
     while True:
@@ -93,7 +93,7 @@ def get_dm():
 
 
 def keep_live():
-    '''每隔40s发送心跳包.'''
+    r'''每隔40s发送心跳包.'''
 
     while True:
         time.sleep(40)
