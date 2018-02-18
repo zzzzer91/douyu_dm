@@ -15,7 +15,7 @@ import requests
 
 
 sk_client = socket.socket()
-# 这个服务器是我测试正常的 2017.10.26
+# 这个服务器已失效 2018.2.18
 # 有些服务器很奇怪，虽然能接收弹幕，但wireshark分析，会出现一大堆TCP Retransmission
 # 并且接收了一段时间后就会停止接收，即使发了心跳包
 host = '223.99.254.250'
