@@ -4,6 +4,7 @@
 """抓取斗鱼弹幕."""
 
 __author__ = 'zzzzer'
+__url__ = 'https://github.com/zzzzer91/douyu_dm'
 
 import re
 import socket
@@ -29,10 +30,11 @@ def get_room_info(uid):
 
     url = 'http://www.douyu.com/{}'.format(uid)
     r = requests.get(url)
-    pattern = re.compile(r'"room_id":(\d+)')
-    room_id = pattern.findall(r.text)[0]
-    pattern = re.compile(r'<a class="zb-name">(.*?)</a>')
-    name = pattern.findall(r.text)[0]
+    # 提取规则可能随时间变动
+    id_pattern = re.compile(r'"room_id":(\d+)')
+    name_pattern = re.compile(r'<a class="zb-name"><h1>(.*?)</h1></a>')
+    room_id = id_pattern.findall(r.text)[0]
+    name = name_pattern.findall(r.text)[0]
     return room_id, name
 
 
@@ -105,10 +107,9 @@ def keep_live(cfd):
 def main():
     uid = input('请输入主播uid：')
     cfd = init(uid)
-    t1 = Thread(target=get_dm, args=(cfd,))
-    t2 = Thread(target=keep_live, args=(cfd,))
-    t1.start()
-    t2.start()
+    t = Thread(target=keep_live, args=(cfd,), daemon=True)
+    t.start()
+    get_dm(cfd)
 
 
 if __name__ == '__main__':
