@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# coding:utf-8
+# coding: utf-8
 
 """抓取斗鱼弹幕."""
 
@@ -107,6 +107,9 @@ def keep_live(cfd):
 def main():
     uid = input('请输入主播uid：')
     cfd = init(uid)
+    # daemon参数设为True, 则主线程结束后会直接退出,
+    # 而不会等待子线程结束后再退出,
+    # 并且此时子线程也会结束.
     t = Thread(target=keep_live, args=(cfd,), daemon=True)
     t.start()
     get_dm(cfd)
